@@ -125,30 +125,86 @@ export default function VoiceInterface() {
   async function handleSend(messageText?: string) {
     const text = (messageText ?? input).trim();
     if (!text) return;
-    setInput('');
 
-    const userMsg: Message = { id: String(Date.now()) + '-u', role: 'user', text };
-    setMessages((m) => [...m, userMsg]);
+    // Clear input immediately
+    setInput("");
 
+    // Create user message
+    const userMsg: Message = {
+      id: `${Date.now()}-u`,
+      role: "user",
+      text,
+    };
+
+    // Build updated messages list immediately (avoids stale state issues)
+    const updatedMessages = [...messages, userMsg];
+
+    // Push user message into UI
+    setMessages(updatedMessages);
+
+    // Show thinking indicator
     setThinking(true);
+
     try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text })
+      // ✅ Build conversation history (last 6 turns)
+      const history = updatedMessages.slice(-6).map((m) => ({
+        role: m.role === "user" ? "user" : "model",
+        parts: [{ text: m.text }],
+      }));
+
+      // ✅ Call backend with message + history
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          history,
+        }),
       });
+
+      // Handle non-200 errors safely
+      if (!res.ok) {
+        throw new Error(`Request failed: ${res.status}`);
+      }
+
       const data = await res.json();
-      const replyText = data?.reply || data?.error || 'Something went wrong';
-      const agentMsg: Message = { id: String(Date.now()) + '-a', role: 'assistant', text: replyText };
-      setMessages((m) => [...m, agentMsg]);
+
+      const replyText =
+        data?.reply?.trim() ||
+        data?.error ||
+        "Sorry, I couldn’t generate a response.";
+
+      // Create assistant message
+      const agentMsg: Message = {
+        id: `${Date.now()}-a`,
+        role: "assistant",
+        text: replyText,
+      };
+
+      // Update UI with assistant response
+      setMessages((prev) => [...prev, agentMsg]);
+
+      // Stop thinking indicator
       setThinking(false);
+
+      // Speak response aloud
       speak(replyText, agentMsg.id);
     } catch (err) {
+      console.error("handleSend error:", err);
+
       setThinking(false);
-      const agentMsg: Message = { id: String(Date.now()) + '-a', role: 'assistant', text: 'Failed to get response' };
-      setMessages((m) => [...m, agentMsg]);
+
+      // Show fallback assistant message
+      const agentMsg: Message = {
+        id: `${Date.now()}-a`,
+        role: "assistant",
+        text: "Sorry — something went wrong while contacting the server.",
+      };
+
+      setMessages((prev) => [...prev, agentMsg]);
     }
   }
+
 
   function speak(text: string, id: string) {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;

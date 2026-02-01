@@ -1,80 +1,119 @@
-const MODEL = process.env.GOOGLE_MODEL || "gemini-2.0-flash";
-const CONTENT_BASE = (model: string) => `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent`;
-const FALLBACK = process.env.GOOGLE_MODEL_FALLBACK || process.env.FALLBACK_MODEL || null;
+// lib/geminiClient.ts
 
+const MODEL = process.env.GOOGLE_MODEL || "gemini-2.0-flash";
+const FALLBACK_MODEL =
+  process.env.GOOGLE_MODEL_FALLBACK ||
+  process.env.FALLBACK_MODEL ||
+  null;
+
+const BASE_URL = "https://generativelanguage.googleapis.com/v1/models";
+
+/**
+ * Main text generation function using Gemini REST API.
+ * Supports fallback model + human-like generation config.
+ */
 export async function generateText(prompt: string) {
   const key = process.env.GOOGLE_API_KEY;
-  if (!key) throw new Error('Missing GOOGLE_API_KEY');
+  if (!key) throw new Error("Missing GOOGLE_API_KEY");
 
-  // Build request body compatible with generateContent (no unsupported fields)
+  // Request payload (Gemini generateContent format)
   const body = {
     contents: [
       {
-        parts: [{ text: prompt }]
-      }
-    ]
+        parts: [{ text: prompt }],
+      },
+    ],
+    generationConfig: {
+      temperature: 0.75,
+      topP: 0.9,
+      maxOutputTokens: 220,
+    },
   };
 
-  // Helper to POST and return parsed JSON or throw an Error with details
-  async function postToContentEndpoint(model: string) {
-    const endpoint = `${CONTENT_BASE(model)}?key=${encodeURIComponent(key)}`;
-    console.info('LM request', { model, endpoint: CONTENT_BASE(model).replace(/(\?key=).*$/, '?<key>') });
+  /**
+   * Calls Gemini model endpoint and returns parsed JSON.
+   */
+  async function callModel(modelName: string) {
+    const endpoint = `${BASE_URL}/${modelName}:generateContent?key=${key}`;
+
     const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
     });
-    const text = await res.text().catch(() => '<no body>');
+
+    const raw = await res.text();
+
     if (!res.ok) {
-      return { ok: false, status: res.status, statusText: res.statusText, body: text };
+      return {
+        ok: false,
+        status: res.status,
+        error: raw,
+      };
     }
+
     try {
-      const data = JSON.parse(text);
-      return { ok: true, data };
-    } catch (e) {
-      throw new Error('Failed to parse language model response');
+      return {
+        ok: true,
+        data: JSON.parse(raw),
+      };
+    } catch {
+      throw new Error("Failed to parse Gemini response JSON");
     }
   }
 
-  // First attempt using configured model
-  const primary = await postToContentEndpoint(MODEL);
-  if (!primary.ok) {
-    // If 403/404, provide actionable message and try fallback if available
-    if (primary.status === 404) {
-      const msg = `Model not found or not accessible: ${MODEL} (HTTP 404). Ensure your API key has access to this model or set GOOGLE_MODEL to a model you can access.`;
-      if (FALLBACK && FALLBACK !== MODEL) {
-        console.warn(msg + ` Attempting fallback model: ${FALLBACK}`);
-        const fallbackRes = await postToContentEndpoint(FALLBACK);
-        if (fallbackRes.ok) {
-          const data = fallbackRes.data;
-          const candidate = data?.candidates?.[0];
-          let textResult = '';
-          if (candidate?.content?.parts && Array.isArray(candidate.content.parts)) textResult = candidate.content.parts.map((p: any) => p.text || '').join('');
-          const usage = data?.usageMetadata || data?.usage || null;
-          return { text: String(textResult).trim(), usage };
-        }
-        throw new Error(`Model not found: ${MODEL} and fallback failed: ${FALLBACK} (${fallbackRes.status})`);
-      }
-      throw new Error(msg);
+  /**
+   * Extract assistant text safely from Gemini response.
+   */
+  function extractText(data: any): string {
+    const candidate = data?.candidates?.[0];
+    if (!candidate?.content?.parts) return "";
+
+    return candidate.content.parts
+      .map((p: any) => p.text || "")
+      .join("")
+      .trim();
+  }
+
+  // ==============================
+  // Primary attempt
+  // ==============================
+  let response = await callModel(MODEL);
+
+  // ==============================
+  // Fallback attempt if model fails
+  // ==============================
+  if (!response.ok) {
+    console.warn(
+      `Gemini model failed (${MODEL}) → ${response.status}`
+    );
+
+    // Retry with fallback model if configured
+    if (FALLBACK_MODEL && FALLBACK_MODEL !== MODEL) {
+      console.warn(`Retrying with fallback: ${FALLBACK_MODEL}`);
+      response = await callModel(FALLBACK_MODEL);
     }
-
-    // For other errors return the body text for debugging
-    throw new Error(`Language model request failed: ${primary.status} ${primary.statusText} - ${primary.body}`);
   }
 
-  const data = primary.data;
-  const candidate = data?.candidates?.[0];
-  let text = '';
-  if (candidate?.content?.parts && Array.isArray(candidate.content.parts)) {
-    text = candidate.content.parts.map((p: any) => p.text || '').join('');
-  } else if (typeof candidate?.content === 'string') {
-    text = candidate.content;
-  } else if (data?.generations?.[0]?.text) {
-    text = data.generations[0].text;
-  } else {
-    text = JSON.stringify(data);
+  // If still failing → throw clean error
+  if (!response.ok) {
+    throw new Error(
+      `Gemini request failed: HTTP ${response.status}`
+    );
   }
 
-  const usage = data?.usageMetadata || data?.usage || null;
-  return { text: String(text).trim(), usage };
+  // Extract usable text
+  const text = extractText(response.data);
+
+  if (!text) {
+    throw new Error("Gemini returned an empty response");
+  }
+
+  // Usage metadata (debug only)
+  const usage =
+    response.data?.usageMetadata ||
+    response.data?.usage ||
+    null;
+
+  return { text, usage };
 }
