@@ -18,6 +18,11 @@
     "jsx": "preserve",
 
     "types": ["node"],
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
     
     "plugins": [
       {

@@ -1,119 +1,355 @@
-/* Minimal CSS fallback to avoid PostCSS/Tailwind compile issues */
+/* ===========================
+   UI V2 — Premium Dark Theme
+   Gemini / ChatGPT Inspired
+   =========================== */
 
 :root {
-  --bg: #0b0f13;
-  --panel: #0f1720;
-  --muted: #94a3b8;
+  --bg: #070a0f;
+  --panel: rgba(255, 255, 255, 0.06);
+  --panel-strong: rgba(255, 255, 255, 0.10);
+
+  --border: rgba(255, 255, 255, 0.10);
+  --muted: rgba(148, 163, 184, 0.85);
+
   --accent: #7c3aed;
+  --accent-2: #06b6d4;
+
+  --radius: 18px;
 }
 
-html, body, #__next {
-  height: 100%;
-}
-
+html,
 body {
-  background-color: var(--bg);
-  color: #fff;
-  -webkit-font-smoothing: antialiased;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  height: 100%;
   margin: 0;
 }
 
+body {
+  background: #111111; 
+  color: white;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial;
+
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+
+/* ===========================
+   Header
+   =========================== */
+
 .header {
   display: flex;
+  justify-content: center;
   align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid rgba(148,163,184,0.08);
+
+  padding: 28px 18px;
 }
 
-.container {
-  max-width: 900px;
+.header h1 {
+  width: 100%;
+  max-width: 850px;         
+  
+  text-align: center;
+
+  padding: 16px 0px;
+
+  font-size: 22px;
+  font-weight: 700;
+
+  border-radius: 18px;
+
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  backdrop-filter: blur(12px);
+
+  color: white;
+}
+
+
+
+
+/* ===========================
+   Layout Root
+   =========================== */
+
+.app-root {
+  max-width: 950px;
   margin: 0 auto;
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
 }
 
-.chat-panel {
-  padding: 1rem;
+/* ===========================
+   Preset Chips
+   =========================== */
+
+.preset-chips {
+  display: flex;
+  justify-content: center;   
+  align-items: center;
+
+  gap: 12px;
+  flex-wrap: wrap;
+
+  padding: 18px 20px;
+}
+
+
+.preset-chip {
+  padding: 10px 16px;       
+  font-size: 14px;          
+  font-weight: 600;         
+  border-radius: 999px;
+
+  cursor: pointer;
+
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+
+  color: white;
+  transition: 0.2s;
+}
+
+.preset-chip:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+
+.preset-chip:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+
+.preset-chip:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ===========================
+   Chat Messages
+   =========================== */
+
+.messages-list {
+  flex: 1;
   overflow-y: auto;
-  gap: 1rem;
-  height: calc(100vh - 160px);
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  padding: 22px;
+  padding-bottom: 140px; /* space for floating input */
 }
 
-.user-bubble {
-  background-color: #374151; /* neutral-700 */
-  color: #fff;
-  border-radius: 12px;
-  padding: 8px 12px;
-  display: inline-block;
+.message-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
 }
 
-.agent-bubble {
-  background-color: var(--panel);
-  color: #fff;
-  border-radius: 12px;
-  padding: 8px 12px;
-  display: inline-block;
-  border: 1px solid rgba(148,163,184,0.06);
+.justify-end {
+  justify-content: flex-end;
 }
 
-.input-bar {
+.justify-start {
+  justify-content: flex-start;
+}
+
+/* ===========================
+   Avatar Bubble
+   =========================== */
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 700;
+  font-size: 14px;
+
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  flex-shrink: 0;
+}
+
+/* ===========================
+   Chat Bubble Styles
+   =========================== */
+
+.bubble {
+  max-width: 72%;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+
+  font-size: 15px;
+  line-height: 1.5;
+
+  border: 1px solid var(--border);
+}
+
+.bubble.user {
+  background: linear-gradient(
+    135deg,
+    rgba(124, 58, 237, 0.8),
+    rgba(37, 99, 235, 0.7)
+  );
+
+  border-bottom-right-radius: 6px;
+}
+
+.bubble.assistant {
+  background: rgba(255, 255, 255, 0.06);
+  border-bottom-left-radius: 6px;
+}
+
+/* ===========================
+   Typing Loader
+   =========================== */
+
+.loader {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===========================
+   Speaking Waveform Animation
+   =========================== */
+
+.waveform {
+  display: flex;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.waveform span {
+  width: 4px;
+  height: 12px;
+  border-radius: 4px;
+  background: var(--accent-2);
+
+  animation: wave 0.9s infinite ease-in-out;
+}
+
+.waveform span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.waveform span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    transform: scaleY(0.4);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* ===========================
+   Floating Input Bar (Gemini Style)
+   =========================== */
+
+.input-wrapper {
   position: fixed;
-  bottom: 16px;
-  left: 0;
-  right: 0;
-  padding: 0 1rem;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: min(920px, 95%);
+  padding: 14px 16px;
+
+  border-radius: 26px;
+
+  background: rgba(15, 15, 20, 0.72);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(18px);
+
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.45);
 }
 
 .input-row {
-  max-width: 768px;
-  margin: 0 auto;
-  background-color: var(--panel);
-  border: 1px solid rgba(148,163,184,0.06);
-  border-radius: 12px;
-  padding: 12px;
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.icon-button {
-  padding: 8px;
-  border-radius: 6px;
-  background: transparent;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-}
-
-.icon-button.recording { background-color: rgba(148,163,184,0.04); }
+/* Input Field */
 
 .input-text {
   flex: 1;
-  background: transparent;
-  outline: none;
-  color: #fff;
   border: none;
-  font-size: 14px;
+  outline: none;
+  background: transparent;
+
+  font-size: 15px;
+  color: white;
+}
+
+.input-text::placeholder {
+  color: rgba(148, 163, 184, 0.65);
+}
+
+/* Buttons */
+
+.icon-button,
+.send-button {
+  width: 44px;
+  height: 44px;
+
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+
+  display: grid;
+  place-items: center;
+
+  background: rgba(255, 255, 255, 0.08);
+  transition: 0.2s;
+}
+
+.icon-button:hover,
+.send-button:hover {
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .send-button {
-  padding: 8px;
-  border-radius: 6px;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  cursor: pointer;
+  background: linear-gradient(
+    135deg,
+    rgba(124, 58, 237, 0.95),
+    rgba(6, 182, 212, 0.75)
+  );
 }
 
-.preset-chips { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
-.preset-chip {
-  background: rgba(31,41,55,0.6);
-  color: rgba(226,232,240,0.9);
-  padding: 6px 10px;
-  border-radius: 9999px;
-  cursor: pointer;
+.send-button:hover {
+  opacity: 0.9;
 }
-.preset-chip:hover { background: rgba(31,41,55,0.8); }
 
-.thinking { font-size: 13px; color: rgba(148,163,184,0.8); font-style: italic; }
+/* Recording State */
 
+.recording {
+  background: rgba(239, 68, 68, 0.35) !important;
+}
+
+/* Mic error */
+
+.mic-error {
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(239, 68, 68, 0.85);
+}
