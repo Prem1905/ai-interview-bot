@@ -13,26 +13,38 @@ export default function ChatInputBar({
   return (
     <div className="input-wrapper">
       <div className="input-row">
+        
+        {/* ✅ MIC BUTTON */}
         <button
-          onClick={onMic}
+          type="button"
+          onClick={() => onMic()}   
           className={`icon-button ${listening ? "recording" : ""}`}
         >
           <Mic size={18} />
         </button>
 
+        {/* ✅ TEXT INPUT */}
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && onSend()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") onSend();
+          }}
           placeholder="Ask Prem anything..."
           className="input-text"
         />
 
-        <button onClick={onSend} className="send-button">
+        {/* ✅ SEND BUTTON */}
+        <button
+          type="button"
+          onClick={() => onSend()}   
+          className="send-button"
+        >
           <Send size={18} />
         </button>
       </div>
 
+      {/* ✅ MIC ERROR MESSAGE */}
       {micError && <p className="mic-error">{micError}</p>}
     </div>
   );
