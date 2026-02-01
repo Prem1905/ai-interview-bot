@@ -1,0 +1,119 @@
+/* Minimal CSS fallback to avoid PostCSS/Tailwind compile issues */
+
+:root {
+  --bg: #0b0f13;
+  --panel: #0f1720;
+  --muted: #94a3b8;
+  --accent: #7c3aed;
+}
+
+html, body, #__next {
+  height: 100%;
+}
+
+body {
+  background-color: var(--bg);
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  margin: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(148,163,184,0.08);
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.chat-panel {
+  padding: 1rem;
+  overflow-y: auto;
+  gap: 1rem;
+  height: calc(100vh - 160px);
+}
+
+.user-bubble {
+  background-color: #374151; /* neutral-700 */
+  color: #fff;
+  border-radius: 12px;
+  padding: 8px 12px;
+  display: inline-block;
+}
+
+.agent-bubble {
+  background-color: var(--panel);
+  color: #fff;
+  border-radius: 12px;
+  padding: 8px 12px;
+  display: inline-block;
+  border: 1px solid rgba(148,163,184,0.06);
+}
+
+.input-bar {
+  position: fixed;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  padding: 0 1rem;
+}
+
+.input-row {
+  max-width: 768px;
+  margin: 0 auto;
+  background-color: var(--panel);
+  border: 1px solid rgba(148,163,184,0.06);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon-button {
+  padding: 8px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.icon-button.recording { background-color: rgba(148,163,184,0.04); }
+
+.input-text {
+  flex: 1;
+  background: transparent;
+  outline: none;
+  color: #fff;
+  border: none;
+  font-size: 14px;
+}
+
+.send-button {
+  padding: 8px;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.preset-chips { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+.preset-chip {
+  background: rgba(31,41,55,0.6);
+  color: rgba(226,232,240,0.9);
+  padding: 6px 10px;
+  border-radius: 9999px;
+  cursor: pointer;
+}
+.preset-chip:hover { background: rgba(31,41,55,0.8); }
+
+.thinking { font-size: 13px; color: rgba(148,163,184,0.8); font-style: italic; }
+
